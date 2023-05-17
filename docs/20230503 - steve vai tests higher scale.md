@@ -116,7 +116,8 @@ Details on tests are available in the [bin/run_test.js](https://github.com/moio/
 ./run_tests.mjs
 ```
 
-Interpreting results: the script will output one `results.csv` file with the following columns:
+### Interpreting results
+The script will output one `results.csv` file with the following columns:
  * `tag`: the image tag for the test (`baseline` or `vai`)
    - `baseline` refers to Rancher 2.7.1 images with a [fix](https://github.com/rancher/steve/pull/80/) for a [race condition](https://github.com/rancher/rancher/issues/40892) discovered during this analysis
    - `vai` refers to Rancher 2.7.1 images with Vai patches
