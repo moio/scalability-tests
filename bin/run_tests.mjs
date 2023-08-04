@@ -14,7 +14,7 @@ import {k6_run} from "./lib/k6.mjs"
 const CONFIG_MAP_COUNT = 1000
 const SECRET_COUNT = 1000
 const ROLE_COUNT = 10
-const USER_COUNT = 5
+const USER_COUNT = 1000
 const PROJECT_COUNT = 20
 
 // Refresh k6 files on the tester cluster
@@ -25,13 +25,13 @@ helm_install("k6-files", dir("charts/k6-files"), tester, "tester", {})
 // Create config maps
 const commit = runCollectingOutput("git rev-parse --short HEAD").trim()
 const downstreams = Object.entries(clusters).filter(([k,v]) => k.startsWith("downstream"))
-for (const [name, downstream] of downstreams) {
-    k6_run(tester,
-        { BASE_URL: `https://${downstream["private_name"]}:6443`, KUBECONFIG: downstream["kubeconfig"], CONTEXT: downstream["context"], CONFIG_MAP_COUNT: CONFIG_MAP_COUNT, SECRET_COUNT: SECRET_COUNT},
-        {commit: commit, cluster: name, test: "create_load.mjs", ConfigMaps: CONFIG_MAP_COUNT, Secrets: SECRET_COUNT},
-        "k6/create_k8s_resources.js", true
-    )
-}
+// for (const [name, downstream] of downstreams) {
+//     k6_run(tester,
+//         { BASE_URL: `https://${downstream["private_name"]}:6443`, KUBECONFIG: downstream["kubeconfig"], CONTEXT: downstream["context"], CONFIG_MAP_COUNT: CONFIG_MAP_COUNT, SECRET_COUNT: SECRET_COUNT},
+//         {commit: commit, cluster: name, test: "create_load.mjs", ConfigMaps: CONFIG_MAP_COUNT, Secrets: SECRET_COUNT},
+//         "k6/create_k8s_resources.js", true
+//     )
+// }
 
 const upstream = clusters["upstream"]
 // create users and roles
@@ -41,11 +41,11 @@ k6_run(tester,
     "k6/create_roles_users.js", true
 )
 // create projects
-k6_run(tester,
-    { BASE_URL: `https://${upstream["private_name"]}:443`, USERNAME: "admin", PASSWORD: ADMIN_PASSWORD, PROJECT_COUNT: PROJECT_COUNT },
-    {commit: commit, cluster: "upstream", test: "create_projects.mjs", Projects: PROJECT_COUNT},
-    "k6/create_projects.js", true
-)
+// k6_run(tester,
+//     { BASE_URL: `https://${upstream["private_name"]}:443`, USERNAME: "admin", PASSWORD: ADMIN_PASSWORD, PROJECT_COUNT: PROJECT_COUNT },
+//     {commit: commit, cluster: "upstream", test: "create_projects.mjs", Projects: PROJECT_COUNT},
+//     "k6/create_projects.js", true
+// )
 
 // Output access details
 console.log("*** ACCESS DETAILS")

@@ -14,7 +14,7 @@ import {install_rancher_monitoring} from "./lib/rancher_monitoring.mjs";
 
 // Parameters
 const CERT_MANAGER_CHART = "https://charts.jetstack.io/charts/cert-manager-v1.8.0.tgz"
-const RANCHER_CHART = "https://releases.rancher.com/server-charts/latest/rancher-2.7.4.tgz"
+const RANCHER_CHART = "https://releases.rancher.com/server-charts/latest/rancher-2.7.5.tgz"
 const GRAFANA_CHART = "https://github.com/grafana/helm-charts/releases/download/grafana-6.56.5/grafana-6.56.5.tgz"
 
 // Step 1: Terraform
@@ -130,6 +130,6 @@ if (importedClusters.length > 0) {
     run(`kubectl wait cluster.fleet.cattle.io --all --namespace fleet-default --for condition=ready=true --timeout=1h ${q(kuf)} ${q(cuf)}`)
 }
 
-for (const [_, cluster] of importedClusters) {
-    install_rancher_monitoring(cluster, {})
-}
+// for (const [_, cluster] of importedClusters) {
+//     install_rancher_monitoring(cluster, {})
+// }
