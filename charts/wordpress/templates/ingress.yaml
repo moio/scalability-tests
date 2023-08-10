@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+   labels:
+     app.kubernetes.io/name: wordpress
+   name: wordpress-ingress
+   annotations:
+     ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+ rules:
+ - http:
+     paths:
+     - path: /wordpress
+       backend:
+         service:
+           name: wordpress
+           port:
+             number: 80
+       pathType: Prefix
