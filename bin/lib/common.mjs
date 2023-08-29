@@ -29,20 +29,66 @@ export function terraformVar() {
     return ""
 }
 
+/** wait for given number of milliseconds */
+function msleep(ms) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+}
+
+/**
+ * Run shell command and return output if required.
+ *
+ * If `tries` is more than one, the command is executed until succeeds,
+ * but no more than the given number times.
+ * If `ignore` provided the stderr is captured and the command is repeated
+ * only if the stderr contains the given text, otherwise we return immediately.
+ *
+ * @param ignore    Retry command only if the stderr includes text from `ignore`.
+ *                  Not used if `tries` is not provided or 1.
+ * @param tries     Maximum number of attempts to succeed the command without error.
+ * @param wait      Number of seconds to wait between attempts.
+ */
 export function run(cmdline, options = {}) {
     console.log(`***Running command:\n ${cmdline}\n`)
-    const res = spawnSync(cmdline, [], {
-        input: options.input,
-        stdio: [options.input ? "pipe": "inherit", options.collectingOutput ? "pipe" : "inherit", "inherit"],
-        shell: true
-    })
-    if (res.error){
-        throw res.error
+    var tries = options.tries ?? 1
+    var retryWaitSeconds = options.waitSecs ?? 1
+    var ignoreText = options.ignore ?? ""
+    var res
+    while (tries > 0) {
+        tries -= 1
+        res = spawnSync(cmdline, [], {
+            input: options.input,
+            stdio: [options.input ? "pipe": "inherit",
+                    options.collectingOutput ? "pipe" : "inherit",
+                    // we need to capture stderr for checking `ignore` text
+                    options.ignore ? "pipe" : "inherit"],
+            shell: true
+        })
+        if (res.error){
+            throw res.error
+        }
+        // because of ignore check, we capture the stderr
+        // which is not duplicated, so just print it out now
+        if (options.ignore) {
+            console.error(res.stderr?.toString())
+        }
+        if (res.status === 0) {
+            break
+        }
+        console.log("")
+        if (tries === 0) {
+            throw new Error(`Command returned status ${res.status}`)
+        }
+        if (options.ignore) {
+            var ignoring = res.stderr?.toString().includes(ignoreText)
+            if (ignoring) {
+                console.log(`Ignoring because of: ${ignoreText}`)
+            } else {
+                throw new Error(`Command returned status ${res.status}`)
+            }
+        }
+        console.error(`Waiting ${retryWaitSeconds} seconds before next try...`)
+        msleep(retryWaitSeconds * 1000)
     }
-    if (res.status !== 0){
-        throw new Error(`Command returned status ${res.status}`)
-    }
-    console.log("")
     return res.stdout?.toString()
 }
 
