@@ -18,8 +18,7 @@ const CERT_MANAGER_CHART = "https://charts.jetstack.io/charts/cert-manager-v1.8.
 const RANCHER_CHART = "https://releases.rancher.com/server-charts/latest/rancher-2.7.4.tgz"
 const GRAFANA_CHART = "https://github.com/grafana/helm-charts/releases/download/grafana-6.56.5/grafana-6.56.5.tgz"
 const WORDPRESS_CHART = "oci://registry-1.docker.io/bitnamicharts/wordpress"
-
-const WORDPRESS_NUM = env.WORDPRESS_NUM ?? 4
+const WORDPRESS_INSTANCES_PER_CLUSTER = 4
 
 // Step 1: Terraform
 run(`terraform -chdir=${q(terraformDir())} init -upgrade`)
@@ -134,14 +133,11 @@ if (importedClusters.length > 0) {
     run(`kubectl wait cluster.fleet.cattle.io --all --namespace fleet-default --for condition=ready=true --timeout=1h ${q(kuf)} ${q(cuf)}`)
 }
 
+// Step 4: Install applications
 for (const [_, cluster] of importedClusters) {
     install_rancher_monitoring(cluster, {})
-}
 
-// Step 3: Install applications
-for (const [_, cluster] of importedClusters) {
-    for (var i=0; i < WORDPRESS_NUM ; i++) {
-        console.log(`===Installing wordpress ${i} on ${cluster["context"]}`)
+    for (var i=0; i < WORDPRESS_INSTANCES_PER_CLUSTER ; i++) {
         helm_install("wordpress", WORDPRESS_CHART, cluster, `wordpress-${i}`, {
                 wordpressUsername: "admin",
                 wordpressPassword: ADMIN_PASSWORD,
@@ -150,6 +146,8 @@ for (const [_, cluster] of importedClusters) {
                     enabled: true,
                     hostname: `wordpress-${i}.${cluster["local_name"]}`,
                 },
+                // HACK: for the purpose of this test it is not really relevant that those Wordpress installations provide
+                // excellent performance, lower request limits
                 resources: {
                     requests: {
                         cpu: "1m"
