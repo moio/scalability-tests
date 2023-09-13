@@ -8,6 +8,18 @@ variable "region" {
   type        = string
 }
 
+variable "ami" {
+  description = "Optional AMI to use for bastion host. Will use the default from `aws_host` module if not set"
+  type        = string
+  default     = null
+}
+
+variable "instance_type" {
+  description = "Optional instance_type to use for bastion host. Will use the default from `aws_host` module if not set"
+  type        = string
+  default     = null
+}
+
 variable "availability_zone" {
   description = "Availability zone where the instance is created"
   type        = string
