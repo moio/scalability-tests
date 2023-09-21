@@ -6,7 +6,16 @@ variable "domain" {
   type = string
 }
 
+variable "vpc_id" {
+  type = string
+}
+
+variable "public_subnets" {
+  type = list(string)
+}
+
 variable "use_route53" {
-  type = bool
+  type    = bool
+  default = false
 }
 

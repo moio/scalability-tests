@@ -28,7 +28,7 @@ locals {
 
 variable "project_name" {
   type    = string
-  default = "moio"
+  default = "st"
 }
 
 variable "region" {
@@ -114,7 +114,7 @@ variable "tester_cluster" {
 
 variable "num_downstreams" {
   type    = number
-  default = 0
+  default = 5
 }
 
 variable "downstream_config" {
