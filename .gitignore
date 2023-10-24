@@ -11,3 +11,4 @@ config/rke*
 
 bin/out.json
 bin/results.csv
+*.tfvars

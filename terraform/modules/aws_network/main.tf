@@ -31,11 +31,12 @@ locals {
 }
 
 resource "aws_eip" "nat_eip" {
-  vpc  = true
+  domain = "vpc"
   tags = {
     Project = var.project_name
     Name    = "${var.project_name}-nat-eip"
   }
+  depends_on = [aws_internet_gateway.main]
 }
 
 resource "aws_nat_gateway" "nat" {
@@ -137,7 +138,7 @@ resource "aws_route_table_association" "secondary_private" {
 }
 
 resource "aws_vpc_dhcp_options" "dhcp_options" {
-  domain_name         = var.region == "us-east-1" ? "ec2.internal" : "${var.region}.compute.internal"
+  domain_name         = contains(["us-east-1", "us-west-1"], var.region) ? "ec2.internal" : "${var.region}.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
@@ -164,9 +165,9 @@ resource "aws_security_group" "public" {
   }
 
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
     cidr_blocks = concat([aws_subnet.private.cidr_block], var.secondary_availability_zone != null ? [
       aws_subnet.secondary_private[0].cidr_block
     ] : [])
@@ -233,8 +234,11 @@ module "bastion" {
   availability_zone     = var.availability_zone
   project_name          = var.project_name
   name                  = "bastion"
+  ami                   = var.ami
+  instance_type         = var.instance_type
   ssh_key_name          = aws_key_pair.key_pair.key_name
   ssh_private_key_path  = var.ssh_private_key_path
   subnet_id             = aws_subnet.public.id
   vpc_security_group_id = aws_security_group.public.id
+  depends_on            = [aws_vpc_dhcp_options_association.vpc_dhcp_options, aws_route_table_association.secondary_private]
 }

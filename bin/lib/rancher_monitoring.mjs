@@ -1,7 +1,7 @@
 import {helm_install} from "./common.mjs";
 
-const RANCHER_MONITORING_CHART = "https://github.com/rancher/charts/raw/release-v2.7/assets/rancher-monitoring/rancher-monitoring-102.0.0%2Bup40.1.2.tgz"
-const RANCHER_MONITORING_CRD_CHART = "https://github.com/rancher/charts/raw/release-v2.7/assets/rancher-monitoring-crd/rancher-monitoring-crd-102.0.0%2Bup40.1.2.tgz"
+const RANCHER_MONITORING_CHART = "https://github.com/rancher/charts/raw/release-v2.7/assets/rancher-monitoring/rancher-monitoring-102.0.1%2Bup40.1.2.tgz"
+const RANCHER_MONITORING_CRD_CHART = "https://github.com/rancher/charts/raw/release-v2.7/assets/rancher-monitoring-crd/rancher-monitoring-crd-102.0.1%2Bup40.1.2.tgz"
 
 export function install_rancher_monitoring(cluster, monitoringRestrictions, mimirUrl = null) {
     helm_install("rancher-monitoring-crd", RANCHER_MONITORING_CRD_CHART, cluster, "cattle-monitoring-system", {
