@@ -237,4 +237,5 @@ module "bastion" {
   ssh_private_key_path  = var.ssh_private_key_path
   subnet_id             = aws_subnet.public.id
   vpc_security_group_id = aws_security_group.public.id
+  depends_on            = [aws_vpc_dhcp_options_association.vpc_dhcp_options, aws_route_table_association.public]
 }
