@@ -24,12 +24,6 @@ const commit = runCollectingOutput("git rev-parse --short HEAD").trim()
 const downstreams = Object.entries(clusters).filter(([k,v]) => k.startsWith("downstream"))
 
 const upstream = clusters["upstream"]
-// create users and roles
-k6_run(tester,
-    { BASE_URL: `https://${upstream["private_name"]}:443`, USERNAME: "admin", PASSWORD: ADMIN_PASSWORD, ROLE_COUNT: ROLE_COUNT, USER_COUNT: USER_COUNT },
-    {commit: commit, cluster: "upstream", test: "create_roles_users.mjs", Roles: ROLE_COUNT, Users: USER_COUNT},
-    "k6/create_roles_users.js", true
-)
 
 // Output access details
 console.log("*** ACCESS DETAILS")
