@@ -14,16 +14,15 @@ import {k6_run} from "./lib/k6.mjs"
 const ROLE_COUNT = 10
 const USER_COUNT = 1000
 
-// Refresh k6 files on the tester cluster
+// Refresh k6 files on the upstream cluster
 const clusters = runCollectingJSONOutput(`terraform -chdir=${terraformDir()} output -json`)["clusters"]["value"]
-const tester = clusters["tester"]
-helm_install("k6-files", dir("charts/k6-files"), tester, "tester", {})
+const upstream = clusters["upstream"]
+helm_install("k6-files", dir("charts/k6-files"), upstream, "tester", {})
 
 // Create config maps
 const commit = runCollectingOutput("git rev-parse --short HEAD").trim()
 const downstreams = Object.entries(clusters).filter(([k,v]) => k.startsWith("downstream"))
 
-const upstream = clusters["upstream"]
 
 // Output access details
 console.log("*** ACCESS DETAILS")
@@ -53,11 +52,5 @@ for (const [name, downstream] of downstreams) {
         console.log(`    Node ${node}: ${q(command)}`)
     }
     console.log()
-}
-
-console.log(`*** TESTER CLUSTER`)
-console.log(`    Grafana UI: http://${tester["local_name"]}:${tester["local_http_port"]}/grafana/d/a1508c35-b2e6-47f4-94ab-fec400d1c243/test-results?orgId=1&refresh=5s&from=now-30m&to=now (admin/${ADMIN_PASSWORD})`)
-for (const [node, command] of Object.entries(tester["node_access_commands"])) {
-    console.log(`    Node ${node}: ${q(command)}`)
 }
 console.log()

@@ -30,53 +30,6 @@ const clusters = runCollectingJSONOutput(`terraform -chdir=${q(terraformDir())} 
 
 
 // Step 2: Helm charts
-// tester cluster
-const tester = clusters["tester"]
-helm_install("mimir", dir("charts/mimir"), tester, "tester", {})
-helm_install("k6-files", dir("charts/k6-files"), tester, "tester", {})
-helm_install("grafana-dashboards", dir("charts/grafana-dashboards"), tester, "tester", {})
-
-const localTesterName = tester["local_name"]
-helm_install("grafana", GRAFANA_CHART, tester, "tester", {
-    datasources: {
-        "datasources.yaml": {
-            apiVersion: 1,
-            datasources: [{
-                name: "mimir",
-                type: "prometheus",
-                url: "http://mimir.tester:9009/mimir/prometheus",
-                access: "proxy",
-                isDefault: true
-            }]
-        }
-    },
-    dashboardProviders: {
-        "dashboardproviders.yaml": {
-            apiVersion: 1,
-            providers: [{
-                name: "default",
-                folder: "",
-                type: "file",
-                disableDeletion: false,
-                editable: true,
-                options: {
-                    path: "/var/lib/grafana/dashboards/default"
-                }
-            }]
-        }
-    },
-    dashboardsConfigMaps: { "default": "grafana-dashboards" },
-    ingress: {
-        enabled: true,
-        path: "/grafana",
-        hosts: [localTesterName]
-    },
-    env: {
-        "GF_SERVER_ROOT_URL": `http://${localTesterName}/grafana`,
-        "GF_SERVER_SERVE_FROM_SUB_PATH": "true"
-    },
-    adminPassword: ADMIN_PASSWORD,
-})
 
 // upstream cluster
 const upstream = clusters["upstream"]
@@ -119,7 +72,7 @@ const monitoringRestrictions = {
     tolerations: [{key: "monitoring", operator: "Exists", effect: "NoSchedule"}],
 }
 
-install_rancher_monitoring(upstream, isK3d() ? {} : monitoringRestrictions, `http://${tester["private_name"]}/mimir/api/v1/push`)
+install_rancher_monitoring(upstream, isK3d() ? {} : monitoringRestrictions)
 
 helm_install("cgroups-exporter", dir("charts/cgroups-exporter"), upstream, "cattle-monitoring-system", {})
 
@@ -132,7 +85,8 @@ run(`kubectl wait deployment/rancher --namespace cattle-system --for condition=A
 const localRancherUrl = `https://${localUpstreamName}:${upstream["local_https_port"]}`
 const importedClusters = Object.entries(clusters).filter(([k,v]) => k.startsWith("downstream"))
 const importedClusterNames = importedClusters.map(([name, cluster]) => name).join(",")
-k6_run(tester, { BASE_URL: privateRancherUrl, BOOTSTRAP_PASSWORD: BOOTSTRAP_PASSWORD, PASSWORD: ADMIN_PASSWORD, IMPORTED_CLUSTER_NAMES: importedClusterNames}, {}, "k6/rancher_setup.js")
+helm_install("k6-files", dir("charts/k6-files"), upstream, "tester", {})
+k6_run(upstream, { BASE_URL: privateRancherUrl, BOOTSTRAP_PASSWORD: BOOTSTRAP_PASSWORD, PASSWORD: ADMIN_PASSWORD, IMPORTED_CLUSTER_NAMES: importedClusterNames}, {}, "k6/rancher_setup.js")
 
 for (const [name, cluster] of importedClusters) {
     const clusterId = await retryOnError(() =>

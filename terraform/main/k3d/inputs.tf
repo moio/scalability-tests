@@ -28,19 +28,7 @@ locals {
     }
   ]
 
-  tester_cluster = {
-    name           = "tester"
-    server_count   = 1
-    agent_count    = 0
-    distro_version = "v1.26.9+k3s1"
-    agent_labels   = []
-    agent_taints   = []
-
-    // k3d-specific
-    local_name = "tester.local.gd"
-  }
-
-  clusters = concat([local.upstream_cluster], local.downstream_clusters, [local.tester_cluster])
+  clusters = concat([local.upstream_cluster], local.downstream_clusters)
 
   // k3d-specific
   first_local_kubernetes_api_port = 6445
