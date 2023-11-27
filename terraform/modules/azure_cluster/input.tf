@@ -62,6 +62,7 @@ variable "ssh_user" {
 
 variable "ssh_public_key_path" {
   description = "Path to the (public) SSH key used to access cluster nodes"
+  type        = string
 }
 
 variable "ssh_private_key_path" {
@@ -71,6 +72,7 @@ variable "ssh_private_key_path" {
 
 variable "ssh_bastion_host" {
   description = "Public name of the SSH bastion host. Leave null for publicly accessible nodes."
+  type        = string
   default     = null
 }
 
@@ -99,9 +101,10 @@ variable "sans" {
   type        = list(string)
   default     = []
 }
+
 variable "distro_version" {
-  description = "RKE2 version"
-  default     = "v1.24.4+rke2r1"
+  description = "Kubernetes distribution version"
+  default     = "v1.23.10+k3s1"
 }
 
 variable "max_pods" {
@@ -112,6 +115,18 @@ variable "max_pods" {
 variable "node_cidr_mask_size" {
   description = "Size of the CIDR mask for nodes. Increase when increasing max_pods so that 2^(32-node_cidr_max_size) > 2 * max_pods"
   default     = 24
+}
+
+variable "datastore" {
+  description = "Data store to use: mariadb, postgres or leave for a default (sqlite for one-server-node installs, embedded etcd otherwise)"
+  type        = string
+  default     = null
+}
+
+variable "datastore_endpoint" {
+  description = "Override datastore with a custom endpoint string"
+  type        = string
+  default     = null
 }
 
 variable "host_configuration_commands" {

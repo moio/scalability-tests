@@ -36,8 +36,13 @@ module "agent_nodes" {
   host_configuration_commands = var.host_configuration_commands
 }
 
+locals {
+  is_k3s = strcontains(var.distro_version, "k3s")
+  is_rke2 = strcontains(var.distro_version, "rke2")
+}
 
 module "k3s" {
+  count        = is_k3s ? 1 : 0
   source       = "../k3s"
   project      = var.project_name
   name         = var.name
@@ -55,5 +60,25 @@ module "k3s" {
   distro_version      = var.distro_version
   max_pods            = var.max_pods
   node_cidr_mask_size = var.node_cidr_mask_size
-  datastore_endpoint  = null
+}
+
+module "rke2" {
+  count        = is_rke2 ? 1 : 0
+  source       = "../rke2"
+  project      = var.project_name
+  name         = var.name
+  server_names = [for node in module.server_nodes : node.private_name]
+  agent_names  = [for node in module.agent_nodes : node.private_name]
+  agent_labels = var.agent_labels
+  agent_taints = var.agent_taints
+  sans         = var.sans
+
+  ssh_user                  = var.ssh_user
+  ssh_private_key_path      = var.ssh_private_key_path
+  ssh_bastion_host          = var.ssh_bastion_host
+  local_kubernetes_api_port = var.local_kubernetes_api_port
+
+  distro_version      = var.distro_version
+  max_pods            = var.max_pods
+  node_cidr_mask_size = var.node_cidr_mask_size
 }

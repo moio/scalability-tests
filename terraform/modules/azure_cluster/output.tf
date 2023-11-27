@@ -7,11 +7,11 @@ output "first_server_public_name" {
 }
 
 output "kubeconfig" {
-  value = module.k3s.kubeconfig
+  value = is_k3s ? module.k3s.kubeconfig : is_rke2 ? module.rke2.kubeconfig : null
 }
 
 output "context" {
-  value = module.k3s.context
+  value = is_k3s ? module.k3s.context : is_rke2 ? module.rke2.context : null
 }
 
 output "local_http_port" {
