@@ -13,8 +13,6 @@ import {k6_run} from "./lib/k6.mjs"
 
 
 // Parameters
-const CONFIG_MAP_COUNT = 1000
-const SECRET_COUNT = 1000
 const ROLE_COUNT = 10
 const USER_COUNT = 5
 const PROJECT_COUNT = 20
