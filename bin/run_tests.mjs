@@ -29,14 +29,6 @@ const commit = runCollectingOutput("git rev-parse --short HEAD").trim()
 const downstreams = Object.entries(clusters).filter(([k,v]) => k.startsWith("downstream"))
 const upstream = clusters["upstream"]
 
-for (const [name, downstream] of downstreams) {
-    k6_run(tester,
-        { BASE_URL: downstream["private_kubernetes_api_url"], KUBECONFIG: downstream["kubeconfig"], CONTEXT: downstream["context"], CONFIG_MAP_COUNT: CONFIG_MAP_COUNT, SECRET_COUNT: SECRET_COUNT},
-        {commit: commit, cluster: name, test: "create_load.mjs", ConfigMaps: CONFIG_MAP_COUNT, Secrets: SECRET_COUNT},
-        "k6/create_k8s_resources.js", true
-    )
-}
-
 k6_run(tester,
     { BASE_URL: upstream["private_kubernetes_api_url"], KUBECONFIG: upstream["kubeconfig"], CONTEXT: upstream["context"], CONFIG_MAP_COUNT: CONFIG_MAP_COUNT, SECRET_COUNT: SECRET_COUNT},
     {commit: commit, cluster: "upstream", test: "create_load.mjs", ConfigMaps: CONFIG_MAP_COUNT, Secrets: SECRET_COUNT},
