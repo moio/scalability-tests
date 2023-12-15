@@ -1,5 +1,5 @@
 locals {
-  project_name = "st-rke2"
+  project_name = "st-rke2-hp"
 
   upstream_cluster = {
     name                        = "upstream"
@@ -9,14 +9,14 @@ locals {
     reserve_node_for_monitoring = true
 
     // azure-specific
-    size = "Standard_D8ds_v4"
+    size = "Standard_E8ads_v5"
     os_image = {
       publisher = "suse"
       offer     = "opensuse-leap-15-5"
       sku       = "gen2"
       version   = "latest"
     }
-    os_disk_type      = "StandardSSD_LRS"
+    // os_disk_type      = "StandardSSD_LRS"
     os_ephemeral_disk = true
     boot_diagnostics  = true
   }
