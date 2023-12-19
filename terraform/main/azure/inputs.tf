@@ -3,8 +3,8 @@ locals {
 
   upstream_cluster = {
     name                        = "upstream"
-    server_count                = 1
-    agent_count                 = 2
+    server_count                = 3
+    agent_count                 = 1
     distro_version              = "v1.24.4+rke2r1"
     reserve_node_for_monitoring = true
 
@@ -25,7 +25,7 @@ locals {
     for i in range(100) :
     {
       name                        = "downstream-${i}"
-      server_count                = 3
+      server_count                = 1
       agent_count                 = 0
       distro_version              = "v1.26.9+k3s1"
       reserve_node_for_monitoring = false
